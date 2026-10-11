@@ -1,0 +1,8 @@
+node_modules/
+dist/
+artifacts/
+.agents/
+*.log
+.env
+.env.*
+!.env.example
