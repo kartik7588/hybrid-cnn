@@ -18,6 +18,8 @@ input::placeholder,textarea::placeholder { color:var(--muted); opacity:1; }
 .scan-grid { background-image:none; }
 thead { text-transform:none !important; }
 td { font-variant-numeric:tabular-nums; }
+.dataset-workspace table { min-width:640px; }
+.dataset-workspace h3 { overflow-wrap:anywhere; }
 main { min-width:0; }
 h1 { text-wrap:balance; }
 p { overflow-wrap:anywhere; }

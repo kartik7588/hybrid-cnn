@@ -2,6 +2,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import {
   BarChart3,
   ClipboardList,
+  Database,
   FileText,
   LayoutDashboard,
   LogOut,
@@ -14,6 +15,7 @@ import { cn } from "../utils/cn";
 const items = [
   { label: "Dashboard", to: "/dashboard", icon: LayoutDashboard },
   { label: "Upload Scan", to: "/upload", icon: UploadCloud },
+  { label: "Upload Dataset", to: "/dataset", icon: Database },
   { label: "Patient History", to: "/history", icon: ClipboardList },
   { label: "AI Reports", to: "/reports", icon: FileText },
   { label: "Analytics", to: "/analytics", icon: BarChart3 },
@@ -32,7 +34,7 @@ export function Sidebar({ open, onClose }) {
       />
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-40 flex w-72 flex-col border-r border-slate-200 bg-white px-4 py-5 transition-transform dark:border-slate-800 dark:bg-slate-950 lg:sticky lg:top-0 lg:h-screen lg:shrink-0 lg:translate-x-0",
+          "fixed inset-y-0 left-0 z-40 flex w-72 flex-col overflow-y-auto border-r border-slate-200 bg-white px-4 py-5 transition-transform dark:border-slate-800 dark:bg-slate-950 lg:sticky lg:top-0 lg:h-screen lg:shrink-0 lg:translate-x-0",
           open ? "translate-x-0 visible" : "-translate-x-full invisible lg:visible",
         )}
       >

@@ -1,0 +1,20 @@
+import assert from 'node:assert/strict';
+import { createDemoRun, exampleDataset, exportDemoCsv, parseDataset } from '../src/utils/dataset.js';
+
+const dataset = parseDataset(exampleDataset);
+assert.equal(dataset.records.length, 6);
+assert.equal(dataset.headers.length, 5);
+assert.deepEqual(parseDataset('\uFEFFid,note\r\n1,"hello, ""world"""\r\n').records, [['1','hello, "world"']]);
+assert.equal(parseDataset('id,note\n1,"first\nsecond"').records[0][1], 'first\nsecond');
+for (const csv of ['', 'a,b\n', 'a,a\n1,2', ',b\n1,2', 'a,b\n1', 'a,b\n1,"open', 'a,b\n1,"x"oops']) assert.throws(() => parseDataset(csv));
+assert.throws(() => parseDataset('id\n'+Array(5001).fill('x').join('\n')));
+const run = createDemoRun(dataset,['svm','hybrid'],'diagnosis');
+assert.equal(run.models.length, 2);
+assert.equal(run.models[0].predictions.length, 6);
+const changed = { ...dataset, records: dataset.records.map(r=>r.map(()=> 'changed')) };
+assert.deepEqual(createDemoRun(changed,['svm']).models[0].predictions,run.models[0].predictions);
+const csv = exportDemoCsv(dataset,run);
+assert.equal(parseDataset(csv).records.length,6);
+assert.ok(csv.includes('SYNTHETIC DEMO - NO MODEL INFERENCE'));
+assert.ok(exportDemoCsv({headers:['label'],records:[['=HYPERLINK("bad")']]},createDemoRun({headers:['label'],records:[['=HYPERLINK("bad")']]},['svm'],'label')).includes("'=HYPERLINK"));
+console.log('PASS: CSV validation, limits, quoted fields, synthetic output independence and safe CSV export.');
