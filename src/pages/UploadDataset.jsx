@@ -1,7 +1,11 @@
 import { useRef, useState } from 'react';
 import { Database, Download, Play, UploadCloud } from 'lucide-react';
 import { PageHeader } from '../components/PageHeader';
-import { createDemoRun, exampleDataset, exportDemoCsv, parseDataset, researchModels } from '../utils/dataset';
+import { createDemoRun, exportDemoCsv, parseDataset, researchModels } from '../utils/dataset';
+import { convertWdbcToCsv } from '../utils/wdbc';
+import wdbcRaw from '../data/wdbc.data?raw';
+
+const wisconsinCsv = convertWdbcToCsv(wdbcRaw);
 
 const field = 'mt-2 min-h-11 w-full rounded-md border border-slate-300 bg-white px-3 text-sm dark:border-slate-700 dark:bg-slate-900';
 const secondary = 'inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-slate-300 px-3 text-sm font-medium hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40 dark:border-slate-700 dark:hover:bg-slate-900';
@@ -16,6 +20,7 @@ function download(text, name) {
 export default function UploadDataset() {
   const [dataset, setDataset] = useState(null);
   const [fileName, setFileName] = useState('');
+  const [isWisconsin, setIsWisconsin] = useState(false);
   const [error, setError] = useState('');
   const [reading, setReading] = useState(false);
   const [mode, setMode] = useState('single');
@@ -28,20 +33,21 @@ export default function UploadDataset() {
   const ids = mode === 'single' ? [single] : mode === 'hybrid' ? ['hybrid'] : selected;
   const clearRun = () => { setRun(null); setPage(0); };
 
-  const load = (text, name) => {
+  const load = (text, name, wisconsin = false) => {
     const parsed = parseDataset(text);
-    setDataset(parsed); setFileName(name); setError(''); clearRun();
+    setDataset(parsed); setFileName(name); setIsWisconsin(wisconsin); setError(''); clearRun();
     setReference(parsed.headers.find(h => /^(diagnosis|label|target)$/i.test(h)) || '');
   };
   const handleFile = async file => {
     if (!file) return;
     const id = ++request.current;
-    setError(''); clearRun(); setDataset(null); setFileName('');
-    if (!file.name.toLowerCase().endsWith('.csv') || file.size > 10 * 1024 * 1024) {
-      setReading(false); setError('Choose a CSV file up to 10 MB. ZIP folders and image datasets are not supported yet.'); return;
+    setError(''); clearRun(); setDataset(null); setFileName(''); setIsWisconsin(false);
+    const isWdbc = file.name.toLowerCase().endsWith('.data');
+    if ((!file.name.toLowerCase().endsWith('.csv') && !isWdbc) || file.size > 10 * 1024 * 1024) {
+      setReading(false); setError('Choose a CSV or WDBC .data file up to 10 MB. ZIP folders and image datasets are not supported yet.'); return;
     }
     setReading(true);
-    try { const text = await file.text(); if (id === request.current) load(text, file.name); }
+    try { const text = await file.text(); if (id === request.current) load(isWdbc ? convertWdbcToCsv(text) : text, file.name, isWdbc); }
     catch (e) { if (id === request.current) setError(e.message || 'Unable to read this file. Try another CSV.'); }
     finally { if (id === request.current) setReading(false); }
   };
@@ -56,9 +62,11 @@ export default function UploadDataset() {
         <h2 id="dataset-heading" className="text-lg font-semibold">Dataset</h2>
         <div onDragOver={e => e.preventDefault()} onDrop={e => { e.preventDefault(); handleFile(e.dataTransfer.files[0]); }} className="mt-4 border border-dashed border-slate-300 p-5 dark:border-slate-700">
           <div className="flex items-start gap-3"><Database className="mt-1 h-5 w-5 shrink-0 text-blue-700 dark:text-blue-300" /><div className="min-w-0"><h3 className="text-sm font-semibold">{fileName || 'Select a CSV dataset'}</h3><p className="mt-2 text-sm text-slate-600 dark:text-slate-300">Header row required. Up to 5,000 records, 100 columns and 10 MB.</p></div></div>
-          <label className={`${secondary} relative mt-4 cursor-pointer focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-teal-600`}><UploadCloud size={16} />{dataset ? 'Replace dataset' : 'Choose dataset'}<input aria-label="Choose CSV dataset" type="file" accept=".csv,text/csv" className="sr-only" onChange={e => { handleFile(e.target.files[0]); e.target.value = ''; }} /></label>
+          <label className={`${secondary} relative mt-4 cursor-pointer focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-teal-600`}><UploadCloud size={16} />{dataset ? 'Replace dataset' : 'Choose dataset'}<input aria-label="Choose CSV dataset" type="file" accept=".csv,.data,text/csv" className="sr-only" onChange={e => { handleFile(e.target.files[0]); e.target.value = ''; }} /></label>
         </div>
-        <div className="mt-3 flex flex-wrap gap-3"><button disabled={reading} className={secondary} onClick={() => { request.current++; load(exampleDataset, 'example-research.csv'); }}>Use sample dataset</button><button className={secondary} onClick={() => download(exampleDataset, 'example-research.csv')}><Download size={16} />CSV template</button></div>
+        <div className="mt-3 flex flex-wrap gap-3"><button disabled={reading} className={secondary} onClick={() => { request.current++; load(wisconsinCsv, 'wisconsin-diagnostic.csv', true); }}>Use sample dataset</button><button className={secondary} onClick={() => download(wisconsinCsv, 'wisconsin-diagnostic.csv')}><Download size={16} />Download sample CSV</button></div>
+        <p className="mt-3 text-xs leading-5 text-slate-600 dark:text-slate-300">Sample: Wisconsin Diagnostic Breast Cancer. CSV files require headers; original WDBC .data files are also accepted.</p>
+        {isWisconsin && dataset && <div className="mt-3 space-y-2 text-sm text-slate-600 dark:text-slate-300"><p>Wisconsin Diagnostic: {dataset.records.filter(r => r[1] === 'Benign').length} benign and {dataset.records.filter(r => r[1] === 'Malignant').length} malignant records. 30 numeric features, plus case ID and diagnosis. These are cell measurements, not mammogram images. Comparison outputs remain synthetic.</p><p className="text-xs">Wolberg, Mangasarian, Street and Street (1993). <a className="text-blue-700 underline dark:text-blue-300" href="https://doi.org/10.24432/C5DW2B" target="_blank" rel="noreferrer">UCI dataset</a>. <a className="text-blue-700 underline dark:text-blue-300" href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noreferrer">CC BY 4.0</a>. Headers added; B/M labels expanded. ID and diagnosis are not input features.</p></div>}
         {reading && <p role="status" className="mt-3 text-sm">Reading dataset...</p>}
         {error && <p role="alert" className="mt-3 text-sm text-rose-700 dark:text-rose-300">{error}</p>}
         {dataset && <div className="mt-4 border-y border-slate-200 py-3 text-sm dark:border-slate-800"><strong>{dataset.records.length.toLocaleString()}</strong> records <span className="mx-3 text-slate-400">/</span><strong>{dataset.headers.length}</strong> columns</div>}

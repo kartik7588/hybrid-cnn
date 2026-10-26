@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
 import { createDemoRun, exampleDataset, exportDemoCsv, parseDataset } from '../src/utils/dataset.js';
+import { convertWdbcToCsv, wdbcHeaders } from '../src/utils/wdbc.js';
 
 const dataset = parseDataset(exampleDataset);
 assert.equal(dataset.records.length, 6);
@@ -18,3 +20,23 @@ assert.equal(parseDataset(csv).records.length,6);
 assert.ok(csv.includes('SYNTHETIC DEMO - NO MODEL INFERENCE'));
 assert.ok(exportDemoCsv({headers:['label'],records:[['=HYPERLINK("bad")']]},createDemoRun({headers:['label'],records:[['=HYPERLINK("bad")']]},['svm'],'label')).includes("'=HYPERLINK"));
 console.log('PASS: CSV validation, limits, quoted fields, synthetic output independence and safe CSV export.');
+
+const original = await readFile(new URL('../src/data/wdbc.data', import.meta.url), 'utf8');
+const wisconsin = parseDataset(convertWdbcToCsv(original));
+assert.equal(wisconsin.records.length, 569);
+assert.equal(wisconsin.headers.length, 32);
+assert.equal(wdbcHeaders[2], 'radius_mean');
+assert.equal(wdbcHeaders[12], 'radius_se');
+assert.equal(wdbcHeaders[22], 'radius_worst');
+assert.equal(wisconsin.records.filter(r => r[1] === 'Benign').length, 357);
+assert.equal(wisconsin.records.filter(r => r[1] === 'Malignant').length, 212);
+const originals = original.trim().split(/\r?\n/).map(r => r.split(','));
+wisconsin.records.forEach((row, i) => {
+  assert.equal(row[0], originals[i][0]);
+  assert.equal(row[1], originals[i][1] === 'B' ? 'Benign' : 'Malignant');
+  assert.deepEqual(row.slice(2), originals[i].slice(2));
+});
+assert.throws(() => convertWdbcToCsv(original.replace(',M,', ',X,')));
+assert.throws(() => convertWdbcToCsv(original.replace(',17.99,', ',not-numeric,')));
+assert.throws(() => convertWdbcToCsv(''));
+console.log('PASS: 569 WDBC records, 32 headers, label mapping, all feature values and malformed-data checks.');
