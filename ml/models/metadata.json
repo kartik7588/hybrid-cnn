@@ -1,0 +1,123 @@
+{
+  "task": "benign vs malignant classification on WDBC (30 numeric features)",
+  "positive_class": "malignant",
+  "class_mapping": {
+    "0": "benign",
+    "1": "malignant"
+  },
+  "feature_names": [
+    "radius_mean",
+    "texture_mean",
+    "perimeter_mean",
+    "area_mean",
+    "smoothness_mean",
+    "compactness_mean",
+    "concavity_mean",
+    "concave_points_mean",
+    "symmetry_mean",
+    "fractal_dimension_mean",
+    "radius_se",
+    "texture_se",
+    "perimeter_se",
+    "area_se",
+    "smoothness_se",
+    "compactness_se",
+    "concavity_se",
+    "concave_points_se",
+    "symmetry_se",
+    "fractal_dimension_se",
+    "radius_worst",
+    "texture_worst",
+    "perimeter_worst",
+    "area_worst",
+    "smoothness_worst",
+    "compactness_worst",
+    "concavity_worst",
+    "concave_points_worst",
+    "symmetry_worst",
+    "fractal_dimension_worst"
+  ],
+  "split": {
+    "test_size": 0.2,
+    "stratified": true,
+    "random_state": 42,
+    "n_train": 455,
+    "n_test": 114
+  },
+  "cutoff_rule": "highest cutoff on a 0.05 grid whose cross-validated training sensitivity is >= 0.97",
+  "target_sensitivity": 0.97,
+  "sklearn_version": "1.9.1",
+  "models": {
+    "logistic_regression": {
+      "display_name": "Logistic Regression",
+      "file": "logistic_regression.joblib",
+      "cutoff": 0.3,
+      "cv_missed_cancers": 4,
+      "cv_false_alarms": 8,
+      "cv_sensitivity": 0.9764705882352941,
+      "cv_specificity": 0.9719298245614035,
+      "reached_target": true
+    },
+    "svm": {
+      "display_name": "SVM",
+      "file": "svm.joblib",
+      "cutoff": 0.4,
+      "cv_missed_cancers": 5,
+      "cv_false_alarms": 6,
+      "cv_sensitivity": 0.9705882352941176,
+      "cv_specificity": 0.9789473684210527,
+      "reached_target": true
+    },
+    "mlp": {
+      "display_name": "MLP",
+      "file": "mlp.joblib",
+      "cutoff": 0.5,
+      "cv_missed_cancers": 5,
+      "cv_false_alarms": 6,
+      "cv_sensitivity": 0.9705882352941176,
+      "cv_specificity": 0.9789473684210527,
+      "reached_target": true
+    }
+  },
+  "pairs": {
+    "logistic_regression+svm": {
+      "members": [
+        "logistic_regression",
+        "svm"
+      ],
+      "combine": "average of the two models' malignant probabilities",
+      "cutoff": 0.45,
+      "cv_missed_cancers": 5,
+      "cv_false_alarms": 4,
+      "cv_sensitivity": 0.9705882352941176,
+      "cv_specificity": 0.9859649122807017,
+      "reached_target": true
+    },
+    "logistic_regression+mlp": {
+      "members": [
+        "logistic_regression",
+        "mlp"
+      ],
+      "combine": "average of the two models' malignant probabilities",
+      "cutoff": 0.45,
+      "cv_missed_cancers": 5,
+      "cv_false_alarms": 5,
+      "cv_sensitivity": 0.9705882352941176,
+      "cv_specificity": 0.9824561403508771,
+      "reached_target": true
+    },
+    "svm+mlp": {
+      "members": [
+        "svm",
+        "mlp"
+      ],
+      "combine": "average of the two models' malignant probabilities",
+      "cutoff": 0.45,
+      "cv_missed_cancers": 5,
+      "cv_false_alarms": 6,
+      "cv_sensitivity": 0.9705882352941176,
+      "cv_specificity": 0.9789473684210527,
+      "reached_target": true
+    }
+  }
+}
