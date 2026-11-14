@@ -1,0 +1,164 @@
+{
+  "n_test": 114,
+  "results": [
+    {
+      "name": "Logistic Regression",
+      "selected": [
+        "logistic_regression"
+      ],
+      "chosen_cutoff": {
+        "cutoff": 0.3,
+        "missed_cancers": 1,
+        "false_alarms": 1,
+        "sensitivity": 0.9761904761904762,
+        "specificity": 0.9861111111111112,
+        "precision": 0.9761904761904762,
+        "accuracy": 0.9824561403508771,
+        "roc_auc": 0.996031746031746
+      },
+      "default_cutoff_0.5": {
+        "cutoff": 0.5,
+        "missed_cancers": 3,
+        "false_alarms": 1,
+        "sensitivity": 0.9285714285714286,
+        "specificity": 0.9861111111111112,
+        "precision": 0.975,
+        "accuracy": 0.9649122807017544,
+        "roc_auc": 0.996031746031746
+      }
+    },
+    {
+      "name": "SVM",
+      "selected": [
+        "svm"
+      ],
+      "chosen_cutoff": {
+        "cutoff": 0.4,
+        "missed_cancers": 2,
+        "false_alarms": 1,
+        "sensitivity": 0.9523809523809523,
+        "specificity": 0.9861111111111112,
+        "precision": 0.975609756097561,
+        "accuracy": 0.9736842105263158,
+        "roc_auc": 0.9957010582010581
+      },
+      "default_cutoff_0.5": {
+        "cutoff": 0.5,
+        "missed_cancers": 3,
+        "false_alarms": 0,
+        "sensitivity": 0.9285714285714286,
+        "specificity": 1.0,
+        "precision": 1.0,
+        "accuracy": 0.9736842105263158,
+        "roc_auc": 0.9957010582010581
+      }
+    },
+    {
+      "name": "MLP",
+      "selected": [
+        "mlp"
+      ],
+      "chosen_cutoff": {
+        "cutoff": 0.5,
+        "missed_cancers": 2,
+        "false_alarms": 0,
+        "sensitivity": 0.9523809523809523,
+        "specificity": 1.0,
+        "precision": 1.0,
+        "accuracy": 0.9824561403508771,
+        "roc_auc": 0.9970238095238095
+      },
+      "default_cutoff_0.5": {
+        "cutoff": 0.5,
+        "missed_cancers": 2,
+        "false_alarms": 0,
+        "sensitivity": 0.9523809523809523,
+        "specificity": 1.0,
+        "precision": 1.0,
+        "accuracy": 0.9824561403508771,
+        "roc_auc": 0.9970238095238095
+      }
+    },
+    {
+      "name": "Logistic Regression + SVM",
+      "selected": [
+        "logistic_regression",
+        "svm"
+      ],
+      "chosen_cutoff": {
+        "cutoff": 0.45,
+        "missed_cancers": 2,
+        "false_alarms": 1,
+        "sensitivity": 0.9523809523809523,
+        "specificity": 0.9861111111111112,
+        "precision": 0.975609756097561,
+        "accuracy": 0.9736842105263158,
+        "roc_auc": 0.996031746031746
+      },
+      "default_cutoff_0.5": {
+        "cutoff": 0.5,
+        "missed_cancers": 3,
+        "false_alarms": 0,
+        "sensitivity": 0.9285714285714286,
+        "specificity": 1.0,
+        "precision": 1.0,
+        "accuracy": 0.9736842105263158,
+        "roc_auc": 0.996031746031746
+      }
+    },
+    {
+      "name": "Logistic Regression + MLP",
+      "selected": [
+        "logistic_regression",
+        "mlp"
+      ],
+      "chosen_cutoff": {
+        "cutoff": 0.45,
+        "missed_cancers": 2,
+        "false_alarms": 0,
+        "sensitivity": 0.9523809523809523,
+        "specificity": 1.0,
+        "precision": 1.0,
+        "accuracy": 0.9824561403508771,
+        "roc_auc": 0.996031746031746
+      },
+      "default_cutoff_0.5": {
+        "cutoff": 0.5,
+        "missed_cancers": 2,
+        "false_alarms": 0,
+        "sensitivity": 0.9523809523809523,
+        "specificity": 1.0,
+        "precision": 1.0,
+        "accuracy": 0.9824561403508771,
+        "roc_auc": 0.996031746031746
+      }
+    },
+    {
+      "name": "SVM + MLP",
+      "selected": [
+        "svm",
+        "mlp"
+      ],
+      "chosen_cutoff": {
+        "cutoff": 0.45,
+        "missed_cancers": 2,
+        "false_alarms": 0,
+        "sensitivity": 0.9523809523809523,
+        "specificity": 1.0,
+        "precision": 1.0,
+        "accuracy": 0.9824561403508771,
+        "roc_auc": 0.9957010582010583
+      },
+      "default_cutoff_0.5": {
+        "cutoff": 0.5,
+        "missed_cancers": 2,
+        "false_alarms": 0,
+        "sensitivity": 0.9523809523809523,
+        "specificity": 1.0,
+        "precision": 1.0,
+        "accuracy": 0.9824561403508771,
+        "roc_auc": 0.9957010582010583
+      }
+    }
+  ]
+}
