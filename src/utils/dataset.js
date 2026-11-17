@@ -74,3 +74,13 @@ export function exportDemoCsv(dataset, run) {
   const rows = dataset.records.map((record, index) => [index + 1, ...(reference >= 0 ? [record[reference]] : []), ...run.models.flatMap(m => [m.predictions[index].label, m.predictions[index].score]), 'SYNTHETIC DEMO - NO MODEL INFERENCE']);
   return [headers, ...rows].map(row => row.map(quote).join(',')).join('\r\n');
 }
+
+// Export for real model runs (see createRealRun in realRun.js).
+// Same spreadsheet-formula neutralization as exportDemoCsv.
+export function exportRunCsv(dataset, run) {
+  const quote = value => '"' + String(value).replace(/^[\s]*[=+@-]/, "'$&").replaceAll('"', '""') + '"';
+  const reference = dataset.headers.indexOf(run.referenceColumn);
+  const headers = ['row', ...(reference >= 0 ? ['reference_label'] : []), ...run.models.flatMap(m => [`${m.id}_prediction`, `${m.id}_malignant_probability_percent`, `${m.id}_cutoff_percent`]), 'output_type'];
+  const rows = dataset.records.map((record, index) => [index + 1, ...(reference >= 0 ? [record[reference]] : []), ...run.models.flatMap(m => [m.predictions[index].label, m.predictions[index].score, Math.round(m.cutoff * 100)]), 'MODEL PREDICTIONS - research prototype trained on WDBC, not a diagnosis']);
+  return [headers, ...rows].map(row => row.map(quote).join(',')).join('\r\n');
+}
