@@ -2,10 +2,20 @@ import { createRequire } from 'node:module';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { strict as assert } from 'node:assert';
 
+// Settings (all optional):
+//   UI_TEST_BASE     where the site is running (default http://127.0.0.1:4174)
+//   UI_TEST_FOCUSED  1 = only the workflow checks, reusing earlier results
+//   PLAYWRIGHT_PATH  folder of an existing playwright install, if it is not in node_modules
+//   PW_EXECUTABLE    path to a browser executable, if Playwright's own browser is not installed
 const require = createRequire(import.meta.url);
-const { chromium } = require('C:/Users/JAC_PC/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
+function loadPlaywright() {
+  const candidates = [process.env.PLAYWRIGHT_PATH, 'playwright', 'C:/Users/JAC_PC/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright'].filter(Boolean);
+  for (const candidate of candidates) { try { return require(candidate); } catch { /* try the next one */ } }
+  throw new Error('Playwright was not found. Install it with "npm install --no-save playwright" and "npx playwright install chromium", or set PLAYWRIGHT_PATH to an existing playwright folder.');
+}
+const { chromium } = loadPlaywright();
 let browser;
-try { browser = await chromium.launch({ headless:true }); }
+try { browser = await chromium.launch({ headless:true, executablePath:process.env.PW_EXECUTABLE || undefined }); }
 catch { browser = await chromium.launch({ headless:true, channel:'msedge' }); }
 const context = await browser.newContext({ reducedMotion:'reduce' });
 const page = await context.newPage();
