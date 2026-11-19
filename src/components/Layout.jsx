@@ -8,6 +8,7 @@ import { useTheme } from "../hooks/useTheme";
 const names = {
   dashboard: "Dashboard",
   upload: "Upload Scan",
+  dataset: "Upload Dataset",
   results: "AI Results",
   history: "Patient History",
   reports: "AI Reports",
@@ -28,7 +29,7 @@ export function Layout() {
         <Sidebar open={open} onClose={() => setOpen(false)} />
         <div className="min-w-0 flex-1">
           <TopNav onMenuClick={() => setOpen(true)} theme={theme} onThemeToggle={toggleTheme} />
-          <p className="demo-notice">Demonstration workspace. Patients, predictions, overlays and metrics are sample data; no clinical model is connected.</p>
+          <p className="demo-notice">Demonstration workspace. Patients, scan results and most metrics are sample data. Only Upload Dataset uses real models (trained on WDBC numeric data). Nothing here is clinical.</p>
           <main id="main-content" className="mx-auto max-w-[1440px] px-4 py-6 md:px-6">
             <div className="mb-4 flex items-center gap-2 text-xs font-medium text-slate-500 dark:text-slate-400">
               <span>MedAI</span>
