@@ -11,7 +11,7 @@ export function Settings() {
 
   return (
     <>
-      <PageHeader eyebrow="Settings" title="Hospital configuration" description="Manage the local frontend configuration used by the simulated clinical workspace." />
+      <PageHeader eyebrow="Settings" title="Hospital configuration" description="Manage the local frontend configuration used by this demonstration workspace." />
 
       <section className="clinical-card max-w-4xl rounded-xl p-5 dark:text-white">
         <form ref={form} onSubmit={(event) => { event.preventDefault(); localStorage.setItem('clinical-settings', JSON.stringify(Object.fromEntries(new FormData(form.current)))); setSaved(true); }} className="grid gap-5">
@@ -27,12 +27,12 @@ export function Settings() {
               <span className={`block h-5 w-5 rounded-full bg-white transition ${isDark ? "translate-x-4" : ""}`} />
             </button>
           </SettingRow>
-          <SettingRow title="Notifications" description="Clinical alerts, model sync, and review updates.">
+          <SettingRow title="Notifications" description="Demo preference only. No alerts are sent and no models are synced.">
             <input aria-label="Enable demo notification preference" name="Notifications" type="checkbox" defaultChecked={config.Notifications === 'on'} className="h-5 w-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
           </SettingRow>
           <Field label="Hospital Name" value={config['Hospital Name'] || "MedAI City Hospital"} />
-          <Field label="API Endpoint" value={config['API Endpoint'] || "https://api.medai.local/v1"} />
-          <Field label="Model Version" value={config['Model Version'] || "Hybrid CNN v2.1"} />
+          <Field label="API Endpoint" value={config['API Endpoint'] || "http://127.0.0.1:5000/api"} />
+          <Field label="Model Version" value={config['Model Version'] || "Logistic regression, SVM, MLP (WDBC)"} />
           <label>
             <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Language</span>
             <select name="Language" defaultValue={config.Language || 'English'} className="mt-2 h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm outline-none focus:border-blue-300 focus:bg-white focus:ring-4 focus:ring-blue-100 dark:border-slate-800 dark:bg-slate-900 dark:focus:ring-blue-950">
@@ -45,7 +45,7 @@ export function Settings() {
             <Save className="h-4 w-4" />
             Save
           </button>
-          <p role="status" className="text-sm text-slate-600 dark:text-slate-300">{saved ? 'Preferences saved in this browser.' : 'Local demo preferences only. Endpoint, model and language values do not connect services or translate the interface.'}</p>
+          <p role="status" className="text-sm text-slate-600 dark:text-slate-300">{saved ? 'Preferences saved in this browser.' : 'Local preferences, stored in this browser. Endpoint and model values are labels only and are not used to connect services; the prediction server address is set in vite.config.js. Language does not translate the interface.'}</p>
         </form>
       </section>
     </>
