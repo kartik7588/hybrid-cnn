@@ -25,13 +25,13 @@ export const monthlyDiagnoses = [
 ];
 
 export const modelMetrics = [
-  { month: "Jan", accuracy: 94.2, latency: 216 },
-  { month: "Feb", accuracy: 94.8, latency: 205 },
-  { month: "Mar", accuracy: 95.1, latency: 198 },
-  { month: "Apr", accuracy: 95.6, latency: 190 },
-  { month: "May", accuracy: 96.0, latency: 184 },
-  { month: "Jun", accuracy: 96.3, latency: 181 },
-  { month: "Jul", accuracy: 96.6, latency: 180 },
+  { month: "Jan", latency: 216 },
+  { month: "Feb", latency: 205 },
+  { month: "Mar", latency: 198 },
+  { month: "Apr", latency: 190 },
+  { month: "May", latency: 184 },
+  { month: "Jun", latency: 181 },
+  { month: "Jul", latency: 180 },
 ];
 
 export const usageByDepartment = [
