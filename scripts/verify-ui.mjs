@@ -71,7 +71,7 @@ try {
   await page.getByRole('dialog').waitFor({state:'hidden'});
   await page.goto(`${base}/upload`);
   await page.locator('input[type=file]').first().setInputFiles({name:'invalid.txt',mimeType:'text/plain',buffer:Buffer.from('invalid')});
-  assert.match(await page.getByRole('alert').innerText(),/PNG or JPG/);
+  assert.match(await page.getByRole('alert').innerText(),/PNG, JPG, WebP or BMP/);
   await page.locator('input[type=file]').first().setInputFiles({name:'test.png',mimeType:'image/png',buffer:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+j5WQAAAAASUVORK5CYII=','base64')});
   await page.getByLabel('Patient Name',{exact:true}).fill('Demo Patient');
   await page.getByLabel('Notes',{exact:true}).fill('Entered patient notes');
