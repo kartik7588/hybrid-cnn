@@ -4,6 +4,21 @@ import { motion, AnimatePresence } from "framer-motion";
 import { BrainCircuit, CheckCircle2, FileImage, Loader2, UploadCloud } from "lucide-react";
 import { PageHeader } from "../components/PageHeader";
 
+const maxScanBytes = 20 * 1024 * 1024;
+const allowedTypes = { png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg', webp: 'image/webp', bmp: 'image/bmp' };
+const acceptedFormats = 'image/png,image/jpeg,image/webp,image/bmp,.png,.jpg,.jpeg,.webp,.bmp';
+
+// Returns a message when the file cannot be used, or '' when it is fine.
+function checkScanFile(file) {
+  const extension = file.name.split('.').pop().toLowerCase();
+  if (['dcm', 'dicom'].includes(extension) || file.type === 'application/dicom') return 'DICOM files are not supported yet. Export the mammogram as a PNG, JPG, WebP or BMP image.';
+  if (['tif', 'tiff'].includes(extension) || file.type === 'image/tiff') return 'TIFF images cannot be shown in the browser yet. Export the mammogram as a PNG or JPG image.';
+  const known = Object.values(allowedTypes).includes(file.type) || (!file.type && Object.hasOwn(allowedTypes, extension));
+  if (!known) return 'Choose a mammogram X-ray image as PNG, JPG, WebP or BMP, under 20 MB.';
+  if (file.size > maxScanBytes) return 'This image is larger than 20 MB. Choose a smaller PNG, JPG, WebP or BMP file.';
+  return '';
+}
+
 const stages = ["Uploading Image", "Preprocessing", "Running CNN", "Generating Heatmap", "Preparing Report"];
 
 export function UploadScan() {
@@ -21,11 +36,12 @@ export function UploadScan() {
 
   const handleFile = (selected) => {
     if (!selected) return;
-    if (!['image/png', 'image/jpeg'].includes(selected.type) || selected.size > 20 * 1024 * 1024) { setError('Choose a PNG or JPG image under 20 MB. DICOM decoding is not available.'); return; }
+    const problem = checkScanFile(selected);
+    if (problem) { setError(problem); return; }
     setError('');
     if (preview) URL.revokeObjectURL(preview);
     setFile(selected);
-    if (selected.type?.startsWith("image/")) {
+    if (selected.type?.startsWith("image/") || selected.type === "") {
       setPreview(URL.createObjectURL(selected));
     } else {
       setPreview("");
@@ -50,7 +66,7 @@ export function UploadScan() {
       <PageHeader
         eyebrow="Upload mammogram"
         title="Upload scan"
-        description="Upload a mammography image, attach patient context, and run the simulated AI review workflow."
+        description="Upload a mammogram X-ray image, attach patient context, and run the simulated AI review workflow."
       />
 
       <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
@@ -73,16 +89,16 @@ export function UploadScan() {
                 <div className="mx-auto grid h-16 w-16 place-items-center rounded-xl bg-white text-blue-600 shadow-soft dark:bg-slate-900">
                   <UploadCloud className="h-8 w-8" />
                 </div>
-                <h2 className="mt-5 text-xl font-semibold text-slate-950 dark:text-white">Upload Mammogram</h2>
+                <h2 className="mt-5 text-xl font-semibold text-slate-950 dark:text-white">Upload mammogram X-ray</h2>
                 <p className="mt-2 text-sm leading-6 text-slate-500 dark:text-slate-400">
-                  Choose a PNG or JPG image for the demo review. DICOM decoding is not available.
+                  Choose a mammogram X-ray image (PNG, JPG, WebP or BMP) for the demo review. DICOM files are not supported yet.
                 </p>
                 <label className="mt-6 inline-flex cursor-pointer items-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-soft hover:bg-blue-700">
                   <FileImage className="h-5 w-5" />
                   Select Scan
                   <input
                     type="file"
-                    accept="image/png,image/jpeg"
+                    accept={acceptedFormats}
                     className="sr-only"
                     onChange={(event) => handleFile(event.target.files?.[0])}
                   />
@@ -90,9 +106,9 @@ export function UploadScan() {
               </div>
             )}
           </div>
-          <p className="mt-3 text-xs font-medium text-slate-500 dark:text-slate-400">PNG or JPG · Maximum file size 20 MB</p>
+          <p className="mt-3 text-xs font-medium text-slate-500 dark:text-slate-400">PNG, JPG, WebP or BMP · Maximum file size 20 MB · Image type: mammogram (breast X-ray) only</p>
           {error && <p role="alert" className="mt-3 text-sm text-rose-700 dark:text-rose-300">{error}</p>}
-          {preview && <label className="mt-3 inline-block cursor-pointer text-sm font-medium text-blue-700 dark:text-blue-300">Replace scan<input aria-label="Replace scan" type="file" accept="image/png,image/jpeg" className="sr-only" onChange={(event) => handleFile(event.target.files?.[0])} /></label>}
+          {preview && <label className="mt-3 inline-block cursor-pointer text-sm font-medium text-blue-700 dark:text-blue-300">Replace scan<input aria-label="Replace scan" type="file" accept={acceptedFormats} className="sr-only" onChange={(event) => handleFile(event.target.files?.[0])} /></label>}
         </section>
 
         <form ref={patientForm} onSubmit={(event) => event.preventDefault()} className="clinical-card rounded-xl p-5 dark:text-white">
