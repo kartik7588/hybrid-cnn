@@ -13,14 +13,17 @@ It classifies benign versus malignant only: no cancer staging and no "early-stag
 | Layer | What it means | Status |
 |---|---|---|
 | 1. Image input | Mammogram images as PNG, JPG, WebP or BMP (up to 20 MB) | Built (Upload Scan page) |
-| 2. DICOM input | Real mammogram DICOM files (.dcm), as radiologists store them | Planned for launch |
+| 2. DICOM input | Real mammogram DICOM files (.dcm), as radiologists store them | Planned, built in the current work (not left for launch) |
 | 3. AI reads the mammogram | Says benign or malignant, and where the tumor is | Not built yet. Until it is, the Upload Scan analysis is a labeled demo. |
 
 ### Layer 3 in stages
 
 1. **Classify a lesion image** (CBIS-DDSM masses): benign or malignant.
-2. **Classify a region of a full mammogram** that the user selects.
-3. **Locate lesions automatically** (segmentation or detection), trained on the CBIS-DDSM lesion masks.
+2. **Classify a region of a full mammogram** that the user selects, with a model-attention heatmap (Grad-CAM) as a visual aid.
+3. **Locate lesions automatically** (segmentation), trained on the CBIS-DDSM lesion masks, shown as a predicted outline.
+
+The app labels which highlight it shows: a heatmap is a visual aid, an outline is a model prediction. The three WDBC numeric
+models take numbers, not images, so they cannot highlight anything.
 
 Classification and localization are measured differently. Classification: sensitivity, specificity, ROC-AUC.
 Localization: overlap with the real lesion and how many lesions are found versus false alarms.
@@ -51,10 +54,24 @@ with its parts under the same split.
 4. [ ] Choose and download the CBIS-DDSM mass images; patient-aware split
 5. [ ] Image CNN baseline and honest evaluation
 6. [ ] Hybrid (CNN plus numeric features from the same image) compared with its parts
-7. [ ] Image endpoint in the API; connect Upload Scan and Results; DICOM upload; handle the 4.5 MB request limit
+7. [ ] Image endpoint in the API; connect Upload Scan and Results; DICOM upload (now, not left for launch); free hosting for the Python API (large uploads)
 8. [ ] Launch foundations: login and roles, HTTPS, privacy defaults, production server
 9. [ ] Localization of lesions (layer 3, stage 3)
 10. [ ] Final testing on independent data (below)
+
+## Deployment (free)
+
+- Website: Vercel (free).
+- Python API: Vercel Python functions have a 4.5 MB request limit and a 500 MB bundle limit (larger in beta), which does not
+  suit mammogram uploads and image models. The API runs on a separate free host:
+  - **Google Cloud Run** (recommended): free monthly allowance, scales to zero, runs a container (image model, pydicom).
+    A billing account is probably required; usage inside the free allowance is not charged.
+  - **Render free web service**: 512 MB RAM, 0.1 CPU, sleeps after 15 minutes idle (about a minute to wake). Suitable for the
+    small numeric API only.
+  - **Oracle Cloud Always Free VM**: the most capacity, but needs a payment method and server setup.
+  - Hugging Face Docker Spaces need a paid plan to create, so they are not an option.
+- Free-tier limits and terms change; verify them before relying on them.
+- Training happens outside deployment (free notebook GPUs such as Google Colab or Kaggle); only the exported model is deployed.
 
 ## Final testing before any clinical claim (end of the project)
 
