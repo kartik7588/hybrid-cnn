@@ -93,3 +93,5 @@ npm run preview
 - No CNN, no image model, and no image-plus-numeric hybrid
 - No clinical validation
 - Login, patients, scan overlays, reports, and analytics remain simulated
+
+See [docs/ROADMAP.md](docs/ROADMAP.md) for the project scope, the three layers and the roadmap.
