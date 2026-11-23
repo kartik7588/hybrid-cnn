@@ -55,6 +55,27 @@ function entry(id, name, detail, results, pick, measured) {
   };
 }
 
+// Big datasets are sent in chunks so every request stays well under Vercel's 4.5 MB request limit.
+// (5,000 WDBC-sized rows are about 4 MB of JSON in one request.)
+export const CHUNK_SIZE = 1000;
+
+async function predictInChunks(client, models, records) {
+  const results = [];
+  for (let start = 0; start < records.length; start += CHUNK_SIZE) {
+    try {
+      const out = await client.predict(models, records.slice(start, start + CHUNK_SIZE));
+      results.push(...out.results);
+    } catch (err) {
+      // The server numbers rows within the chunk; shift them so the page can report the right data row.
+      if (err instanceof ApiError && Array.isArray(err.details)) {
+        err.details = err.details.map(d => (typeof d === 'string' ? d.replace(/record (\d+)/, (_, n) => `record ${Number(n) + start}`) : d));
+      }
+      throw err;
+    }
+  }
+  return { results };
+}
+
 // mode: 'single' | 'hybrid' | 'compare'; ids: page model ids.
 // single -> 1 id; hybrid -> exactly 2 different ids; compare -> 2 or 3 ids.
 export async function createRealRun(dataset, mode, ids, referenceColumn = '', client = api) {
@@ -77,7 +98,7 @@ export async function createRealRun(dataset, mode, ids, referenceColumn = '', cl
 
     if (mode === 'hybrid') {
       const [a, b] = ids;
-      const out = await client.predict([API_KEYS[a], API_KEYS[b]], records);
+      const out = await predictInChunks(client, [API_KEYS[a], API_KEYS[b]], records);
       const [nameA, nameB] = [modelInfo(a).name, modelInfo(b).name];
       models = [
         entry(`${a}_${b}`, `${nameA} + ${nameB} (combined)`,
@@ -88,7 +109,7 @@ export async function createRealRun(dataset, mode, ids, referenceColumn = '', cl
       ];
     } else {
       models = await Promise.all(ids.map(async id => {
-        const out = await client.predict([API_KEYS[id]], records);
+        const out = await predictInChunks(client, [API_KEYS[id]], records);
         const info = modelInfo(id);
         return entry(id, info.name, info.detail, out.results, r => r,
           findMeasured(metrics, [API_KEYS[id]]));
