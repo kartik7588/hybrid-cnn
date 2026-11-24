@@ -149,3 +149,43 @@ assert.equal(sent.url, 'http://x/api/predict');
 assert.equal(sent.opts.method, 'POST');
 assert.deepEqual(JSON.parse(sent.opts.body), { models: ['svm', 'mlp'], records: [{ a: 1 }] });
 console.log('PASS: API client errors (offline, invalid input, proxy down, server error, timeout) and request format.');
+
+// ---- big datasets are sent in chunks (Vercel's request limit is 4.5 MB) ----
+import { CHUNK_SIZE } from '../src/utils/realRun.js';
+assert.equal(CHUNK_SIZE, 1000);
+const bigDataset = {
+  headers: ['case_id', 'diagnosis', ...features],
+  records: Array.from({ length: 2500 }, (_, i) => [String(i), 'Benign', String(i), ...features.slice(1).map(() => '1')]),
+};
+const chunkClient = (failOnCall = -1) => {
+  const calls = [];
+  return {
+    calls,
+    getModels: async () => ({ features }),
+    getMetrics: async () => ({ n_test: 114, results: [] }),
+    predict: async (models, records) => {
+      calls.push([models, records.length]);
+      if (calls.length - 1 === failOnCall) throw new ApiError('Invalid input.', { status: 400, kind: 'invalid', details: ["record 5: 'radius_mean' must be a number"] });
+      return { results: records.map(r => ({ probability: Number(r.radius_mean) / 10000, cutoff: 0.5, prediction: 'benign' })) };
+    },
+  };
+};
+let chunked = chunkClient();
+run = await createRealRun(bigDataset, 'single', ['svm'], '', chunked);
+assert.deepEqual(chunked.calls.map(c => c[1]), [1000, 1000, 500]);          // three requests, none over 1,000 rows
+assert.ok(chunked.calls.every(c => c[0][0] === 'svm'));
+assert.equal(run.models[0].predictions.length, 2500);                         // all rows come back, in order
+assert.equal(run.models[0].predictions[0].score, 0);
+assert.equal(run.models[0].predictions[1000].score, 10);
+assert.equal(run.models[0].predictions[2000].score, 20);
+assert.equal(run.models[0].predictions[2499].score, 25);
+chunked = chunkClient();
+run = await createRealRun(bigDataset, 'compare', ['svm', 'lr', 'mlp'], '', chunked);
+assert.equal(chunked.calls.length, 9);                                        // 3 models x 3 chunks
+assert.ok(run.models.every(m => m.predictions.length === 2500));
+chunked = chunkClient();
+await createRealRun(dataset, 'single', ['svm'], '', chunked);                 // small datasets still use one request
+assert.equal(chunked.calls.length, 1);
+// an error in a later chunk reports the row number in the whole file, not within the chunk
+await assert.rejects(createRealRun(bigDataset, 'single', ['svm'], '', chunkClient(2)), e => e.details[0] === "data row 2006: 'radius_mean' must be a number");
+console.log('PASS: large datasets are sent in chunks, results stay in order, and error rows are numbered correctly.');
